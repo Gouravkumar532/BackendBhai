@@ -24,8 +24,8 @@ if (Test-Path $installDir) {
     Write-Host "ℹ️  Updating existing installation at $installDir" -ForegroundColor Yellow
     git -C $installDir pull --ff-only
 } else {
-    Write-Host "ℹ️  Downloading BackendBhai (dev branch) to $installDir" -ForegroundColor Yellow
-    git clone -b dev --single-branch --depth 1 $repoUrl $installDir
+    Write-Host "ℹ️  Downloading BackendBhai to $installDir" -ForegroundColor Yellow
+    git clone --depth 1 $repoUrl $installDir
 }
 
 # 4. Install host dependencies & build the UI (required for Docker build)

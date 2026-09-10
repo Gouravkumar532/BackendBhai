@@ -26,8 +26,8 @@ if [ -d "$INSTALL_DIR" ]; then
     echo -e "\033[0;33mℹ️  Updating existing installation at $INSTALL_DIR\033[0m"
     git -C "$INSTALL_DIR" pull --ff-only
 else
-    echo -e "\033[0;33mℹ️  Downloading BackendBhai to $INSTALL_DIR\033[0m"
-    git clone --depth 1 "$REPO_URL" "$INSTALL_DIR"
+    echo -e "\033[0;33mℹ️  Downloading BackendBhai (dev branch) to $INSTALL_DIR\033[0m"
+    git clone -b dev --single-branch --depth 1 "$REPO_URL" "$INSTALL_DIR"
 fi
 
 # 4. Install host dependencies & build the UI

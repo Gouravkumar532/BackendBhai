@@ -8,16 +8,14 @@
 // ✏️  Customize SERVICE_NAME below or set it as an environment variable.
 
 import pkgNodeSDK from '@opentelemetry/sdk-node';
-const { NodeSDK } = pkgNodeSDK;
+const { NodeSDK, resources } = pkgNodeSDK;
+const { Resource } = resources;
 
 import pkgExporter from '@opentelemetry/exporter-trace-otlp-http';
 const { OTLPTraceExporter } = pkgExporter;
 
 import pkgAuto from '@opentelemetry/auto-instrumentations-node';
 const { getNodeAutoInstrumentations } = pkgAuto;
-
-import pkgResources from '@opentelemetry/resources';
-const { Resource } = pkgResources;
 
 import pkgSemantic from '@opentelemetry/semantic-conventions';
 const { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } = pkgSemantic;

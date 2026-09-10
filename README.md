@@ -8,8 +8,36 @@ service hop, database query, external API call and its real timing, in a single 
 tab.
 
 It is a **standalone platform**, not part of any one application. It monitors products.
-This repository ships one example product (a simulated e-commerce store) so you have
-something to look at on day one, but the platform itself knows nothing about it.
+## ⚡ Install
+
+Run this command anywhere to install the **BackendBhai CLI** globally on your machine:
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/Gouravkumar532/BackendBhai/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/Gouravkumar532/BackendBhai/main/install.ps1 | iex
+```
+
+Once installed, boot the platform:
+```bash
+backendbhai start
+```
+
+That's it. BackendBhai is now running at **http://localhost:4001**.
+
+### Connect your project
+
+```bash
+cd your-express-app
+backendbhai init
+npm run dev:traced
+```
+
+Open **http://localhost:4001** — every API call, DB query, and service hop appears live.
 
 ---
 
@@ -88,21 +116,35 @@ docker --version && node --version && pnpm --version
 
 ## Quick start
 
-If you just want it running and you have the prerequisites above:
+> **One command and you're running.** The setup script checks prerequisites,
+> installs dependencies, builds everything, boots Docker, seeds the database,
+> and prints the dashboard URLs.
+
+**macOS / Linux:**
 
 ```bash
-git clone https://github.com/Abhi-R459/BackendBhai.git
+git clone https://github.com/Gouravkumar532/BackendBhai.git
+cd BackendBhai
+chmod +x setup.sh && ./setup.sh
 ```
+
+**Windows (PowerShell):**
+
+```powershell
+git clone https://github.com/Gouravkumar532/BackendBhai.git
+cd BackendBhai
+.\setup.ps1
+```
+
+**Already have Node.js + pnpm?** You can also run:
 
 ```bash
-cd BackendBhai && pnpm install && pnpm -r build
+git clone https://github.com/Gouravkumar532/BackendBhai.git
+cd BackendBhai
+pnpm install && pnpm run setup
 ```
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
-```
-
-Wait about 60 seconds for the first build, then open **<http://localhost:4001>**.
+Once complete, open **<http://localhost:4001>** and start exploring.
 
 If anything goes wrong, follow the detailed steps below instead — they explain what each
 command does and what to expect.

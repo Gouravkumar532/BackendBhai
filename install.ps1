@@ -1,5 +1,3 @@
-$ErrorActionPreference = "Stop"
-
 Write-Host ""
 Write-Host "══════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host "   Installing BackendBhai CLI                     " -ForegroundColor Cyan
@@ -39,9 +37,9 @@ if (-not (Get-Command "pnpm" -ErrorAction SilentlyContinue)) {
     npm install -g pnpm@latest
 }
 
-pnpm install --frozen-lockfile 2>$null
-if ($LASTEXITCODE -ne 0) { pnpm install }
-pnpm -r build
+# Run pnpm via cmd to ensure the working directory and stderr are handled properly
+cmd.exe /c "pnpm install"
+cmd.exe /c "pnpm -r build"
 
 # 5. Install CLI globally
 Write-Host "ℹ️  Installing backendbhai command globally..." -ForegroundColor Yellow

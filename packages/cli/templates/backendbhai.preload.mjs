@@ -8,8 +8,10 @@
 // ✏️  Customize SERVICE_NAME below or set it as an environment variable.
 
 import pkgNodeSDK from '@opentelemetry/sdk-node';
-const { NodeSDK, resources } = pkgNodeSDK;
-const { Resource } = resources;
+const { NodeSDK } = pkgNodeSDK;
+
+import pkgResources from '@opentelemetry/resources';
+const { resourceFromAttributes } = pkgResources;
 
 import pkgExporter from '@opentelemetry/exporter-trace-otlp-http';
 const { OTLPTraceExporter } = pkgExporter;
@@ -24,7 +26,7 @@ const serviceName = process.env.SERVICE_NAME || '{{SERVICE_NAME}}';
 const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318';
 
 const sdk = new NodeSDK({
-  resource: new Resource({
+  resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: serviceName,
     [ATTR_SERVICE_VERSION]: '1.0.0',
   }),

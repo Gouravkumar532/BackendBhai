@@ -37,22 +37,20 @@ if (-not (Get-Command "pnpm" -ErrorAction SilentlyContinue)) {
     npm install -g pnpm@latest
 }
 
-# Use Start-Process to avoid PowerShell NativeCommandError and directory desync issues
-$installArgs = "install", "--dir", "`"$installDir`""
-$p1 = Start-Process -FilePath "pnpm" -ArgumentList $installArgs -Wait -NoNewWindow -PassThru
-if ($p1.ExitCode -ne 0) { Write-Host "❌ pnpm install failed." -ForegroundColor Red; exit 1 }
+# Use cmd.exe to avoid PowerShell's wrapper script issues, and use --dir to avoid folder sync bugs
+cmd.exe /c "pnpm --dir `"$installDir`" install"
+if ($LASTEXITCODE -ne 0) { Write-Host "❌ pnpm install failed." -ForegroundColor Red; exit 1 }
 
-$buildArgs = "-r", "--dir", "`"$installDir`"", "build"
-$p2 = Start-Process -FilePath "pnpm" -ArgumentList $buildArgs -Wait -NoNewWindow -PassThru
-if ($p2.ExitCode -ne 0) { Write-Host "❌ pnpm build failed." -ForegroundColor Red; exit 1 }
+cmd.exe /c "pnpm --dir `"$installDir`" -r build"
+if ($LASTEXITCODE -ne 0) { Write-Host "❌ pnpm build failed." -ForegroundColor Red; exit 1 }
 
 # 5. Install CLI globally
 Write-Host "ℹ️  Installing backendbhai command globally..." -ForegroundColor Yellow
 $cliDir = Join-Path $installDir "packages\cli"
 
-$npmArgs = "install", "-g", "."
-$p3 = Start-Process -FilePath "npm" -ArgumentList $npmArgs -WorkingDirectory $cliDir -Wait -NoNewWindow -PassThru
-if ($p3.ExitCode -ne 0) { Write-Host "❌ npm install globally failed." -ForegroundColor Red; exit 1 }
+# Explicitly pass the folder path to npm to avoid relying on Set-Location
+cmd.exe /c "npm install -g `"$cliDir`""
+if ($LASTEXITCODE -ne 0) { Write-Host "❌ npm install globally failed." -ForegroundColor Red; exit 1 }
 
 Write-Host ""
 Write-Host "══════════════════════════════════════════════════" -ForegroundColor Green

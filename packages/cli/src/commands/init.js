@@ -33,9 +33,13 @@ function detectEntryFile(pkg) {
   if (pkg.scripts) {
     // Look for dev/start scripts to find the entry file
     const devScript = pkg.scripts.dev || pkg.scripts.start || '';
-    // Match patterns like: "node src/index.js", "ts-node src/app.ts", "nodemon server.js"
-    const match = devScript.match(/(?:node|nodemon|ts-node|tsx)\s+([^\s]+)/);
-    if (match) return match[1];
+    // Match the first argument that doesn't start with a dash
+    const parts = devScript.split(' ');
+    const cmdIndex = parts.findIndex(p => ['node', 'nodemon', 'ts-node', 'tsx'].includes(p));
+    if (cmdIndex !== -1) {
+      const entry = parts.slice(cmdIndex + 1).find(p => !p.startsWith('-'));
+      if (entry) return entry;
+    }
   }
   if (pkg.main) return pkg.main;
   // Common defaults

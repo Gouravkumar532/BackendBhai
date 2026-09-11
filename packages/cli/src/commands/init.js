@@ -25,32 +25,70 @@ function detectPackageManager(projectDir) {
   return 'npm'; // default
 }
 
+// Well-known framework CLIs that act as the server entry point.
+const FRAMEWORK_CMDS = ['next', 'nuxt', 'remix', 'vite', 'nest', 'fastify', 'gatsby', 'expo', 'strapi'];
+
+// Node-like runners that precede a file path.
+const NODE_RUNNERS = ['node', 'nodemon', 'ts-node', 'tsx'];
+
 /**
- * Detect the main entry file from package.json.
+ * Detect the main entry file (or framework command) from package.json.
+ *
+ * Handles chained scripts like:
+ *   "node sync.js && node migrate.js && next dev"
+ * by splitting on "&&" and scanning each sub-command for a server entry.
  */
 function detectEntryFile(pkg) {
-  // Check common script fields for the entry point
   if (pkg.scripts) {
-    // Look for dev/start scripts to find the entry file
     const devScript = pkg.scripts.dev || pkg.scripts.start || '';
-    // Match the first argument that doesn't start with a dash
-    const parts = devScript.split(' ');
-    const cmdIndex = parts.findIndex(p => ['node', 'nodemon', 'ts-node', 'tsx'].includes(p));
-    if (cmdIndex !== -1) {
-      const entry = parts.slice(cmdIndex + 1).find(p => !p.startsWith('-'));
-      if (entry) return entry;
+
+    // Split chained commands and evaluate each one independently.
+    const subCommands = devScript.split('&&').map(s => s.trim()).filter(Boolean);
+
+    // Pass 1: Look for a framework CLI (next dev, nuxt dev, etc.) — these are always the server.
+    for (const sub of subCommands) {
+      const parts = sub.split(/\s+/);
+      // Direct invocation: "next dev"
+      const frameworkHit = parts.find(p => FRAMEWORK_CMDS.includes(p));
+      if (frameworkHit) {
+        // Return as a framework command with its arguments (e.g. "next dev")
+        const idx = parts.indexOf(frameworkHit);
+        return { type: 'framework', cmd: frameworkHit, args: parts.slice(idx + 1).join(' ') };
+      }
+      // npx invocation: "npx next dev"
+      if (parts[0] === 'npx') {
+        const fwk = parts.slice(1).find(p => FRAMEWORK_CMDS.includes(p));
+        if (fwk) {
+          const idx = parts.indexOf(fwk);
+          return { type: 'framework', cmd: fwk, args: parts.slice(idx + 1).join(' ') };
+        }
+      }
     }
+
+    // Pass 2: Look for a node runner pointing at a file (take the LAST one — earlier ones are usually setup scripts).
+    let lastNodeEntry = null;
+    for (const sub of subCommands) {
+      const parts = sub.split(/\s+/);
+      const cmdIndex = parts.findIndex(p => NODE_RUNNERS.includes(p));
+      if (cmdIndex !== -1) {
+        const entry = parts.slice(cmdIndex + 1).find(p => !p.startsWith('-'));
+        if (entry) lastNodeEntry = entry;
+      }
+    }
+    if (lastNodeEntry) return { type: 'file', entry: lastNodeEntry };
   }
-  if (pkg.main) return pkg.main;
+
+  if (pkg.main) return { type: 'file', entry: pkg.main };
+
   // Common defaults
-  if (fs.existsSync('src/index.js'))  return 'src/index.js';
-  if (fs.existsSync('src/index.ts'))  return 'src/index.ts';
-  if (fs.existsSync('src/app.js'))    return 'src/app.js';
-  if (fs.existsSync('src/app.ts'))    return 'src/app.ts';
-  if (fs.existsSync('index.js'))      return 'index.js';
-  if (fs.existsSync('server.js'))     return 'server.js';
-  if (fs.existsSync('app.js'))        return 'app.js';
-  return 'src/index.js'; // fallback
+  const defaults = [
+    'src/index.js', 'src/index.ts', 'src/app.js', 'src/app.ts',
+    'index.js', 'server.js', 'app.js',
+  ];
+  for (const d of defaults) {
+    if (fs.existsSync(d)) return { type: 'file', entry: d };
+  }
+  return { type: 'file', entry: 'src/index.js' }; // fallback
 }
 
 async function run() {
@@ -75,19 +113,29 @@ async function run() {
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
   const projectName = pkg.name || path.basename(projectDir);
   const pm = detectPackageManager(projectDir);
-  const entryFile = detectEntryFile(pkg);
+  const detected = detectEntryFile(pkg);
+
+  // Detect pnpm workspace
+  const isPnpmWorkspace = pm === 'pnpm' && fs.existsSync(path.join(projectDir, 'pnpm-workspace.yaml'));
 
   log.success(`Found project: ${log.BOLD}${projectName}${log.NC}`);
-  log.info(`Package manager: ${pm}`);
-  log.info(`Entry file: ${entryFile}`);
+  log.info(`Package manager: ${pm}${isPnpmWorkspace ? ' (workspace)' : ''}`);
+  if (detected.type === 'framework') {
+    log.info(`Framework: ${detected.cmd}`);
+  } else {
+    log.info(`Entry file: ${detected.entry}`);
+  }
 
   // ─── Step 2: Install OpenTelemetry packages ───────────────
   log.step(2, TOTAL, 'Installing OpenTelemetry packages...');
 
+  // For pnpm workspaces, use -w to install at the workspace root
+  const pnpmAddCmd = isPnpmWorkspace ? 'pnpm add -w' : 'pnpm add';
+
   const installCmd = {
     npm:  `npm install ${OTEL_PACKAGES.join(' ')}`,
     yarn: `yarn add ${OTEL_PACKAGES.join(' ')}`,
-    pnpm: `pnpm add ${OTEL_PACKAGES.join(' ')}`,
+    pnpm: `${pnpmAddCmd} ${OTEL_PACKAGES.join(' ')}`,
     bun:  `bun add ${OTEL_PACKAGES.join(' ')}`,
   }[pm];
 
@@ -120,7 +168,29 @@ async function run() {
   // ─── Step 4: Update package.json scripts ──────────────────
   log.step(4, TOTAL, 'Adding dev:traced script to package.json...');
 
-  const tracedScript = `node --import ./backendbhai.preload.mjs ${entryFile}`;
+  // Build the correct traced command based on what we detected
+  let tracedScript;
+  if (detected.type === 'framework') {
+    // For frameworks (next, nuxt, vite, etc.), point to the actual binary inside node_modules
+    const binPath = `./node_modules/${detected.cmd}/dist/bin/${detected.cmd}`;
+    const binPath2 = `./node_modules/.bin/${detected.cmd}`;
+
+    // Use npx to resolve the binary portably
+    const fwkArgs = detected.args ? ` ${detected.args}` : ' dev';
+    tracedScript = `node --import ./backendbhai.preload.mjs ${binPath2}${fwkArgs}`;
+
+    // For Windows compat: npx works more reliably than .bin shims with --import
+    // We'll use the dist/bin path if it exists for known frameworks
+    if (detected.cmd === 'next') {
+      tracedScript = `node --import ./backendbhai.preload.mjs ./node_modules/next/dist/bin/next${fwkArgs}`;
+    } else if (detected.cmd === 'nuxt') {
+      tracedScript = `node --import ./backendbhai.preload.mjs ./node_modules/nuxt/bin/nuxt.mjs${fwkArgs}`;
+    } else if (detected.cmd === 'vite') {
+      tracedScript = `node --import ./backendbhai.preload.mjs ./node_modules/vite/bin/vite.js${fwkArgs}`;
+    }
+  } else {
+    tracedScript = `node --import ./backendbhai.preload.mjs ${detected.entry}`;
+  }
 
   if (pkg.scripts && pkg.scripts['dev:traced']) {
     log.warn('"dev:traced" script already exists — skipping');

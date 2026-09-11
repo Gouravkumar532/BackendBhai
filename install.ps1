@@ -22,8 +22,17 @@ function Install-BackendBhai {
     $installDir = Join-Path $env:USERPROFILE ".backendbhai"
 
     if (Test-Path $installDir) {
-        Write-Host "[i] Updating existing installation at $installDir" -ForegroundColor Yellow
-        git -C $installDir pull --ff-only
+        # Verify the installation has the CLI package — if not, it's on the wrong branch. Nuke and re-clone.
+        $cliCheck = Join-Path $installDir "packages\cli\package.json"
+        if (-not (Test-Path $cliCheck)) {
+            Write-Host "[i] Existing installation is incomplete. Re-downloading..." -ForegroundColor Yellow
+            cmd.exe /c "rmdir /s /q `"$installDir`""
+            git clone -b dev --depth 1 $repoUrl $installDir
+        } else {
+            Write-Host "[i] Updating existing installation at $installDir" -ForegroundColor Yellow
+            git -C $installDir fetch origin dev
+            git -C $installDir reset --hard origin/dev
+        }
     } else {
         Write-Host "[i] Downloading BackendBhai to $installDir" -ForegroundColor Yellow
         git clone -b dev --depth 1 $repoUrl $installDir

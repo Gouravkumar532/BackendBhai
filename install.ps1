@@ -38,10 +38,12 @@ if (-not (Get-Command "pnpm" -ErrorAction SilentlyContinue)) {
 }
 
 # Use cmd.exe to avoid PowerShell's wrapper script issues, and use --dir to avoid folder sync bugs
-cmd.exe /c "pnpm --dir `"$installDir`" install"
+$pnpmCmd = 'pnpm --dir "' + $installDir + '" install'
+cmd.exe /c $pnpmCmd
 if ($LASTEXITCODE -ne 0) { Write-Host "❌ pnpm install failed." -ForegroundColor Red; exit 1 }
 
-cmd.exe /c "pnpm --dir `"$installDir`" -r build"
+$pnpmBuildCmd = 'pnpm --dir "' + $installDir + '" -r build'
+cmd.exe /c $pnpmBuildCmd
 if ($LASTEXITCODE -ne 0) { Write-Host "❌ pnpm build failed." -ForegroundColor Red; exit 1 }
 
 # 5. Install CLI globally
@@ -49,7 +51,8 @@ Write-Host "ℹ️  Installing backendbhai command globally..." -ForegroundColor
 $cliDir = Join-Path $installDir "packages\cli"
 
 # Explicitly pass the folder path to npm to avoid relying on Set-Location
-cmd.exe /c "npm install -g `"$cliDir`""
+$npmCmd = 'npm install -g "' + $cliDir + '"'
+cmd.exe /c $npmCmd
 if ($LASTEXITCODE -ne 0) { Write-Host "❌ npm install globally failed." -ForegroundColor Red; exit 1 }
 
 Write-Host ""

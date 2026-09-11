@@ -76,9 +76,24 @@ This will:
 
 ### Step 3: Run your app with tracing
 
+Use whatever package manager your project uses:
+
 ```bash
 npm run dev:traced
+# or
+pnpm run dev:traced
+# or
+yarn run dev:traced
 ```
+
+> **Note:** `backendbhai init` auto-detects your package manager and tells you the exact command to run:
+>
+> | Your project has | BackendBhai tells you to run |
+> |---|---|
+> | `package-lock.json` | `npm run dev:traced` |
+> | `pnpm-lock.yaml` | `pnpm run dev:traced` |
+> | `yarn.lock` | `yarn run dev:traced` |
+> | `bun.lockb` | `bun run dev:traced` |
 
 ### Step 4: See the magic ✨
 

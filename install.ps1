@@ -26,7 +26,7 @@ function Install-BackendBhai {
         git -C $installDir pull --ff-only
     } else {
         Write-Host "[i] Downloading BackendBhai to $installDir" -ForegroundColor Yellow
-        git clone --depth 1 $repoUrl $installDir
+        git clone -b dev --depth 1 $repoUrl $installDir
     }
 
     # 4. Install host dependencies & build the UI (required for Docker build)

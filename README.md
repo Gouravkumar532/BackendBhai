@@ -8,26 +8,132 @@ service hop, database query, external API call and its real timing, in a single 
 tab.
 
 It is a **standalone platform**, not part of any one application. It monitors products.
-## ⚡ Install
 
-Run this command anywhere to install the **BackendBhai CLI** globally on your machine:
+---
 
-**macOS / Linux:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/Gouravkumar532/BackendBhai/main/install.sh | bash
-```
+## Prerequisites
+
+Before installing, make sure you have the following installed on your machine:
+
+| Tool | Minimum Version | Check |
+|------|----------------|-------|
+| **Git** | Any | `git --version` |
+| **Node.js** | v20+ | `node --version` |
+| **pnpm** | v8+ | `pnpm --version` |
+| **Docker** | v20+ | `docker --version` |
+
+> **Don't have pnpm?** The installer will install it for you automatically.
+
+---
+
+## ⚡ Install (One Command)
+
+Run this single command in your terminal to install the **BackendBhai CLI** globally:
 
 **Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/Gouravkumar532/BackendBhai/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/Gouravkumar532/BackendBhai/dev/install.ps1 | iex
 ```
 
-Once installed, boot the platform:
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/Gouravkumar532/BackendBhai/dev/install.sh | bash
+```
+
+This will:
+1. Clone the repository to `~/.backendbhai`
+2. Install all dependencies
+3. Build the dashboard UI
+4. Make the `backendbhai` command available globally
+
+---
+
+## 🚀 Getting Started
+
+### Step 1: Start the platform
+
 ```bash
 backendbhai start
 ```
 
-That's it. BackendBhai is now running at **http://localhost:4001**.
+This boots up the BackendBhai dashboard and OpenTelemetry collector using Docker.
+The dashboard will be available at **http://localhost:4001**.
+
+### Step 2: Connect your project
+
+Navigate to any Node.js project and run:
+
+```bash
+cd your-project
+backendbhai init
+```
+
+This will:
+- Auto-detect your package manager (npm, pnpm, yarn, bun)
+- Install OpenTelemetry instrumentation packages
+- Create a `backendbhai.preload.mjs` file
+- Add a `dev:traced` script to your `package.json`
+
+### Step 3: Run your app with tracing
+
+```bash
+npm run dev:traced
+```
+
+### Step 4: See the magic ✨
+
+Open **http://localhost:4001** in your browser. Every HTTP request, database query,
+and external API call will appear in real-time with:
+
+- **System Topology Graph** — auto-discovered architecture map
+- **Trace Waterfall** — exact timing of every hop
+- **Error Tracking** — failed requests highlighted in red
+- **Latency Breakdown** — self time vs total time per service
+
+---
+
+## 📋 Supported Project Types
+
+`backendbhai init` automatically handles:
+
+| Project Type | Example | How it works |
+|-------------|---------|--------------|
+| **Express / Fastify** | `node server.js` | Preloads tracing before your entry file |
+| **Next.js** | `next dev` | Points to `node_modules/next/dist/bin/next` |
+| **Nuxt** | `nuxt dev` | Points to `node_modules/nuxt/bin/nuxt.mjs` |
+| **Vite** | `vite dev` | Points to `node_modules/vite/bin/vite.js` |
+| **Chained scripts** | `node sync.js && next dev` | Detects the actual server command |
+| **pnpm workspaces** | Monorepos | Installs packages at workspace root with `-w` |
+
+---
+
+## 🛠️ Everyday Commands
+
+| Command | Description |
+|---------|-------------|
+| `backendbhai start` | Start the platform (Docker) |
+| `backendbhai stop` | Stop the platform |
+| `backendbhai init` | Instrument the current Node.js project |
+| `npm run dev:traced` | Run your app with tracing enabled |
+
+---
+
+## 🛑 Stopping & Uninstalling
+
+**Stop the platform:**
+```bash
+backendbhai stop
+```
+
+**Uninstall completely:**
+```powershell
+backendbhai stop
+npm uninstall -g backendbhai
+Remove-Item -Recurse -Force ~/.backendbhai
+```
+
+---
+
 
 ### Connect your project
 

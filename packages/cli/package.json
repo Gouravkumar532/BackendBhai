@@ -1,0 +1,31 @@
+{
+  "name": "backendbhai",
+  "version": "0.1.0",
+  "description": "Chrome DevTools for your backend. One command to see every API call, DB query, and service hop.",
+  "keywords": [
+    "backend",
+    "devtools",
+    "observability",
+    "opentelemetry",
+    "tracing",
+    "debugging",
+    "api",
+    "monitoring"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gouravkumar532/BackendBhai.git"
+  },
+  "bin": {
+    "backendbhai": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "templates/"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

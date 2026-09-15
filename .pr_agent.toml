@@ -70,8 +70,8 @@ Generate a description that includes:
 """
 
 [pr_commands]
-/similar_issue = false
-/help = false
+"/similar_issue" = false
+"/help" = false
 
 # Auto-trigger on every push (not just PR creation)
 [handle_push_trigger]

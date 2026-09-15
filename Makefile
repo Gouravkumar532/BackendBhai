@@ -2,27 +2,7 @@
 # Source: dev4.md §6.8
 # Author: Dev 5 (Abhinav) — drafted for Dev 4 to refine
 
-.PHONY: setup up down seed reset-db logs demo dev stop clean test
-
-# ─── One-Command Setup ───────────────────────────────────────────────
-
-setup: ## One-command full setup for new developers
-	@echo "🚀 Setting up BackendBhai..."
-	pnpm install
-	pnpm -r build
-	docker compose up -d --build
-	@echo "⏳ Waiting for services to be healthy..."
-	@sleep 15
-	$(MAKE) seed
-	@echo ""
-	@echo "══════════════════════════════════════════════════"
-	@echo "   ✅ BackendBhai is ready!"
-	@echo "══════════════════════════════════════════════════"
-	@echo "   DevTools UI:       http://localhost:4001"
-	@echo "   OTLP gRPC:        http://localhost:4317"
-	@echo "   OTLP HTTP:        http://localhost:4318"
-	@echo "══════════════════════════════════════════════════"
-	@echo ""
+.PHONY: up down seed reset-db logs demo dev stop clean test
 
 # ─── Stack Management ────────────────────────────────────────────────
 

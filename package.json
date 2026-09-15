@@ -12,9 +12,7 @@
     "reset-db": "node scripts/reset-db.js",
     "logs": "docker compose logs -f",
     "demo": "node scripts/demo.js",
-    "start-local": "node scripts/start-local.js",
-    "landing": "pnpm --filter landing-page dev",
-    "setup": "node scripts/setup.js"
+    "start-local": "node scripts/start-local.js"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

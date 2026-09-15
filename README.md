@@ -8,157 +8,8 @@ service hop, database query, external API call and its real timing, in a single 
 tab.
 
 It is a **standalone platform**, not part of any one application. It monitors products.
-
----
-
-## Prerequisites
-
-Before installing, make sure you have the following installed on your machine:
-
-| Tool | Minimum Version | Check |
-|------|----------------|-------|
-| **Git** | Any | `git --version` |
-| **Node.js** | v20+ | `node --version` |
-| **pnpm** | v8+ | `pnpm --version` |
-| **Docker** | v20+ | `docker --version` |
-
-> **Don't have pnpm?** The installer will install it for you automatically.
-
----
-
-## ⚡ Install (One Command)
-
-Run this single command in your terminal to install the **BackendBhai CLI** globally:
-
-**Windows (PowerShell):**
-```powershell
-irm https://raw.githubusercontent.com/Gouravkumar532/BackendBhai/dev/install.ps1 | iex
-```
-
-**macOS / Linux:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/Gouravkumar532/BackendBhai/dev/install.sh | bash
-```
-
-This will:
-1. Clone the repository to `~/.backendbhai`
-2. Install all dependencies
-3. Build the dashboard UI
-4. Make the `backendbhai` command available globally
-
----
-
-## 🚀 Getting Started
-
-### Step 1: Start the platform
-
-```bash
-backendbhai start
-```
-
-This boots up the BackendBhai dashboard and OpenTelemetry collector using Docker.
-The dashboard will be available at **http://localhost:4001**.
-
-### Step 2: Connect your project
-
-Navigate to any Node.js project and run:
-
-```bash
-cd your-project
-backendbhai init
-```
-
-This will:
-- Auto-detect your package manager (npm, pnpm, yarn, bun)
-- Install OpenTelemetry instrumentation packages
-- Create a `backendbhai.preload.mjs` file
-- Add a `dev:traced` script to your `package.json`
-
-### Step 3: Run your app with tracing
-
-Use whatever package manager your project uses:
-
-```bash
-npm run dev:traced
-# or
-pnpm run dev:traced
-# or
-yarn run dev:traced
-```
-
-> **Note:** `backendbhai init` auto-detects your package manager and tells you the exact command to run:
->
-> | Your project has | BackendBhai tells you to run |
-> |---|---|
-> | `package-lock.json` | `npm run dev:traced` |
-> | `pnpm-lock.yaml` | `pnpm run dev:traced` |
-> | `yarn.lock` | `yarn run dev:traced` |
-> | `bun.lockb` | `bun run dev:traced` |
-
-### Step 4: See the magic ✨
-
-Open **http://localhost:4001** in your browser. Every HTTP request, database query,
-and external API call will appear in real-time with:
-
-- **System Topology Graph** — auto-discovered architecture map
-- **Trace Waterfall** — exact timing of every hop
-- **Error Tracking** — failed requests highlighted in red
-- **Latency Breakdown** — self time vs total time per service
-
----
-
-## 📋 Supported Project Types
-
-`backendbhai init` automatically handles:
-
-| Project Type | Example | How it works |
-|-------------|---------|--------------|
-| **Express / Fastify** | `node server.js` | Preloads tracing before your entry file |
-| **Next.js** | `next dev` | Points to `node_modules/next/dist/bin/next` |
-| **Nuxt** | `nuxt dev` | Points to `node_modules/nuxt/bin/nuxt.mjs` |
-| **Vite** | `vite dev` | Points to `node_modules/vite/bin/vite.js` |
-| **Chained scripts** | `node sync.js && next dev` | Detects the actual server command |
-| **pnpm workspaces** | Monorepos | Installs packages at workspace root with `-w` |
-
----
-
-## 🛠️ Everyday Commands
-
-| Command | Description |
-|---------|-------------|
-| `backendbhai start` | Start the platform (Docker) |
-| `backendbhai stop` | Stop the platform |
-| `backendbhai init` | Instrument the current Node.js project |
-| `npm run dev:traced` | Run your app with tracing enabled |
-
----
-
-## 🛑 Stopping & Uninstalling
-
-**Stop the platform:**
-```bash
-backendbhai stop
-```
-
-**Uninstall completely:**
-```powershell
-backendbhai stop
-npm uninstall -g backendbhai
-Remove-Item -Recurse -Force ~/.backendbhai
-```
-
----
-
-
-### Connect your project
-
-```bash
-cd your-express-app
-backendbhai init
-npm run dev:traced
-```
-
-Open **http://localhost:4001** — every API call, DB query, and service hop appears live.
+This repository ships one example product (a simulated e-commerce store) so you have
+something to look at on day one, but the platform itself knows nothing about it.
 
 ---
 
@@ -237,35 +88,21 @@ docker --version && node --version && pnpm --version
 
 ## Quick start
 
-> **One command and you're running.** The setup script checks prerequisites,
-> installs dependencies, builds everything, boots Docker, seeds the database,
-> and prints the dashboard URLs.
-
-**macOS / Linux:**
+If you just want it running and you have the prerequisites above:
 
 ```bash
-git clone https://github.com/Gouravkumar532/BackendBhai.git
-cd BackendBhai
-chmod +x setup.sh && ./setup.sh
+git clone https://github.com/Abhi-R459/BackendBhai.git
 ```
-
-**Windows (PowerShell):**
-
-```powershell
-git clone https://github.com/Gouravkumar532/BackendBhai.git
-cd BackendBhai
-.\setup.ps1
-```
-
-**Already have Node.js + pnpm?** You can also run:
 
 ```bash
-git clone https://github.com/Gouravkumar532/BackendBhai.git
-cd BackendBhai
-pnpm install && pnpm run setup
+cd BackendBhai && pnpm install && pnpm -r build
 ```
 
-Once complete, open **<http://localhost:4001>** and start exploring.
+```bash
+docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+```
+
+Wait about 60 seconds for the first build, then open **<http://localhost:4001>**.
 
 If anything goes wrong, follow the detailed steps below instead — they explain what each
 command does and what to expect.
